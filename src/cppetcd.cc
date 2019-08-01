@@ -264,12 +264,14 @@ namespace etcd {
     if (pair == lock_keys_.end()) {
       return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION, "No lock acquired");
     }
+
+    auto pair_second = pair->second;
     lock_keys_.erase(name);
 
     std::unique_ptr<v3lockpb::Lock::Stub> stub = v3lockpb::Lock::NewStub(channel_);
     grpc::ClientContext context;
     v3lockpb::UnlockRequest req;
-    req.set_key(pair->second);
+    req.set_key(pair_second);
     v3lockpb::UnlockResponse res;
 
     grpc::Status status = stub->Unlock(&context, req, &res);
