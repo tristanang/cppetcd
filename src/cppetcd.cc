@@ -265,16 +265,16 @@ namespace etcd {
       return grpc::Status(grpc::StatusCode::FAILED_PRECONDITION, "No lock acquired");
     }
 
-    auto pair_second = pair->second;
-    lock_keys_.erase(name);
-
     std::unique_ptr<v3lockpb::Lock::Stub> stub = v3lockpb::Lock::NewStub(channel_);
     grpc::ClientContext context;
     v3lockpb::UnlockRequest req;
-    req.set_key(pair_second);
+    req.set_key(pair->second);
     v3lockpb::UnlockResponse res;
 
     grpc::Status status = stub->Unlock(&context, req, &res);
+    if (status.ok()) {
+      lock_keys_.erase(pair);
+    }
     return status;
   }
   bool Client::HasLock(const std::string& name) {
